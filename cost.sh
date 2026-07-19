@@ -2,7 +2,7 @@
 
 SUBSCRIPTION_ID="a4a9ae3c-3366-48b8-9030-d035a7ea4119"
 
-VM_NAME="VM1"
+VM_NAME="testVM1"
 RESOURCE_GROUP="vinay"
 
 # Get VM Resource ID
