@@ -41,23 +41,23 @@ fi
 
 VM_COST=$(echo "$RESULT" | jq -r '
 .properties.rows[]
-| select(.[1] | test("/virtualMachines/VM1$"; "i"))
+| select(.[1] | test("/virtualMachines/testVM1$"; "i"))
 | .[0] // 0
 ')
 
 DISK_COST=$(echo "$RESULT" | jq -r '
 .properties.rows[]
-| select(.[1] | test("vm1_osdisk"; "i"))
+| select(.[1] | test("testVM1_OsDisk_1_05965a984ad14c73a1f4dec67cf28a4e"; "i"))
 | .[0] // 0
 ')
 
 PIP_COST=$(echo "$RESULT" | jq -r '
 .properties.rows[]
-| select(.[1] | test("vm1-ip"; "i"))
+| select(.[1] | test("testVM1-ip"; "i"))
 | .[0] // 0
 ')
 
-TOTAL_COST=$(awk "BEGIN {printf \"%.2f\", $VM_COST + $DISK_COST + $PIP_COST}")
+TOTAL_COST=$(echo "$VM_COST $DISK_COST $PIP_COST" | awk '{printf "%.2f", $1+$2+$3}')
 
 echo "VM Cost      : ₹$VM_COST"
 echo "Disk Cost    : ₹$DISK_COST"
