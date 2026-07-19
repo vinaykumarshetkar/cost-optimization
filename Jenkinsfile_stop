@@ -10,7 +10,7 @@ pipeline {
             }
         }
 
-        stage('Azure Login and Start VM') {
+        stage('Stop VM and Generate Cost Report') {
             steps {
                 withCredentials([
                     azureServicePrincipal(
@@ -21,66 +21,86 @@ pipeline {
                         tenantIdVariable: 'AZ_TENANT_ID'
                     )
                 ]) {
+                    script {
 
-                    sh '''
-                    set -e
+                        env.COST_REPORT = sh(
+                            returnStdout: true,
+                            script: '''
+                            set -e
 
-                    az --version
-                    az login \
-                      --service-principal \
-                      --username "$AZ_CLIENT_ID" \
-                      --password "$AZ_CLIENT_SECRET" \
-                      --tenant "$AZ_TENANT_ID"
+                            az login \
+                              --service-principal \
+                              --username "$AZ_CLIENT_ID" \
+                              --password "$AZ_CLIENT_SECRET" \
+                              --tenant "$AZ_TENANT_ID" >/dev/null
 
-                    az account set --subscription "$AZ_SUBSCRIPTION_ID"
+                            az account set --subscription "$AZ_SUBSCRIPTION_ID"
 
-                    az account show
-                    az vm get-instance-view \
-                      --resource-group vinay \
-                      --name testVM1 \
-                      --query "instanceView.statuses[?code=='PowerState/running']"
+                            echo "Stopping VM..."
+                            az vm deallocate \
+                                --resource-group vinay \
+                                --name testVM1
 
-                    az vm Deallocate \
-                      --resource-group vinay \
-                      --name testVM1
-                    '''
+                            echo ""
+                            echo "Generating Cost Report..."
+                            chmod +x cost.sh
+                            ./cost.sh
+                            '''
+                        ).trim()
+                    }
                 }
             }
         }
     }
-post {
-    success {
-        emailext(
-            subject: "Azure VM Started Successfully",
-            body: """
+
+    post {
+        success {
+            emailext(
+                to: 'vinay.abc.reports@gmail.com',
+                subject: 'Azure VM Stopped Successfully',
+                body: """
 Hello,
 
 The Azure VM operation completed successfully.
 
-VM Name          : testVM1
-Resource Group   : vinay
-Operation        : Stop
-Status           : SUCCESS
+VM Name        : testVM1
+Resource Group : vinay
+Operation      : Stop
+Status         : SUCCESS
+
+==================================
+Azure Cost Report
+==================================
+
+${env.COST_REPORT}
+
+Build URL: ${env.BUILD_URL}
 
 Regards,
 Jenkins
-""",
-            to: "vinay.abc.reports@gmail.com"
-        )
-    }
+"""
+            )
+        }
 
-    failure {
-        emailext(
-            subject: "Azure VM Operation Failed",
-            body: """
+        failure {
+            emailext(
+                to: 'vinay.abc.reports@gmail.com',
+                subject: 'Azure VM Operation Failed',
+                body: """
+Hello,
+
 The Azure VM operation failed.
 
-Please check the Jenkins console logs.
-
 Build URL: ${env.BUILD_URL}
-""",
-            to: "vinay.abc.reports@gmail.com"
-        )
-    }
+
+Regards,
+Jenkins
+"""
+            )
+        }
+
+        always {
+            cleanWs()
+        }
     }
 }
