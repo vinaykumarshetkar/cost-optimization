@@ -36,7 +36,7 @@ pipeline {
 
                     az account show
 
-                    az vm deallocate \
+                    az vm start \
                       --resource-group vinay \
                       --name testVM1
                     '''
@@ -78,9 +78,5 @@ Build URL: ${env.BUILD_URL}
             to: "vinay.abc.reports@gmail.com"
         )
     }
-
-        always {
-            cleanWs()
-        }
     }
 }
