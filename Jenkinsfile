@@ -5,7 +5,7 @@ pipeline {
 
         stage('Clone Repository') {
             steps {
-                git branch: 'candidate/vinay',
+                git branch: 'main',
                     url: 'https://github.com/vinaykumarshetkar/cost-optimization.git'
             }
         }
