@@ -2,6 +2,37 @@
 
 SUBSCRIPTION_ID="a4a9ae3c-3366-48b8-9030-d035a7ea4119"
 
+VM_NAME="VM1"
+RESOURCE_GROUP="vinay"
+
+# Get VM Resource ID
+VM_ID=$(az vm show \
+  -g "$RESOURCE_GROUP" \
+  -n "$VM_NAME" \
+  --query id \
+  -o tsv)
+
+# Get OS Disk Resource ID
+DISK_ID=$(az vm show \
+  -g "$RESOURCE_GROUP" \
+  -n "$VM_NAME" \
+  --query "storageProfile.osDisk.managedDisk.id" \
+  -o tsv)
+
+# Get NIC Resource ID
+NIC_ID=$(az vm show \
+  -g "$RESOURCE_GROUP" \
+  -n "$VM_NAME" \
+  --query "networkProfile.networkInterfaces[0].id" \
+  -o tsv)
+
+# Get Public IP Resource ID (if one exists)
+PIP_ID=$(az network nic show \
+  --ids "$NIC_ID" \
+  --query "ipConfigurations[0].publicIPAddress.id" \
+  -o tsv)
+
+
 FROM=$(date -u -d "1 day ago" +"%Y-%m-%dT00:00:00Z")
 TO=$(date -u +"%Y-%m-%dT00:00:00Z")
 
@@ -38,22 +69,21 @@ if echo "$RESULT" | jq -e '.error' >/dev/null; then
     echo "$RESULT" | jq .
     exit 1
 fi
-
-VM_COST=$(echo "$RESULT" | jq -r '
+VM_COST=$(echo "$RESULT" | jq -r --arg id "${VM_ID,,}" '
 .properties.rows[]
-| select(.[1] | test("/virtualMachines/testVM1$"; "i"))
+| select((.[1] | ascii_downcase) == $id)
 | .[0] // 0
 ')
 
-DISK_COST=$(echo "$RESULT" | jq -r '
+DISK_COST=$(echo "$RESULT" | jq -r --arg id "${DISK_ID,,}" '
 .properties.rows[]
-| select(.[1] | test("testVM1_OsDisk_1_05965a984ad14c73a1f4dec67cf28a4e"; "i"))
+| select((.[1] | ascii_downcase) == $id)
 | .[0] // 0
 ')
 
-PIP_COST=$(echo "$RESULT" | jq -r '
+PIP_COST=$(echo "$RESULT" | jq -r --arg id "${PIP_ID,,}" '
 .properties.rows[]
-| select(.[1] | test("testVM1-ip"; "i"))
+| select((.[1] | ascii_downcase) == $id)
 | .[0] // 0
 ')
 
