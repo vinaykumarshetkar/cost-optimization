@@ -36,7 +36,7 @@ pipeline {
 
                     az account show
 
-                    az vm status \
+                    az vm deallocate \
                       --resource-group vinay \
                       --name testVM1
                     '''
