@@ -88,7 +88,8 @@ PIP_COST=$(echo "$RESULT" | jq -r --arg id "${PIP_ID,,}" '
 ')
 
 TOTAL_COST=$(echo "$VM_COST $DISK_COST $PIP_COST" | awk '{printf "%.2f", $1+$2+$3}')
-
+echo "From         : $FROM"
+echo "To           : $TO"
 echo "VM Cost      : ₹$VM_COST"
 echo "Disk Cost    : ₹$DISK_COST"
 echo "Public IP    : ₹$PIP_COST"
