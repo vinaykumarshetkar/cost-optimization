@@ -14,7 +14,7 @@ pipeline {
             steps {
                 withCredentials([
                     azureServicePrincipal(
-                        credentialsId: 'vinay-azure-sp',
+                        credentialsId: 'jenkins-azure-sp',
                         subscriptionIdVariable: 'AZ_SUBSCRIPTION_ID',
                         clientIdVariable: 'AZ_CLIENT_ID',
                         clientSecretVariable: 'AZ_CLIENT_SECRET',
@@ -35,7 +35,7 @@ pipeline {
 
                     az account show
 
-                    az vm start \
+                    az vm status \
                       --resource-group vinay \
                       --name testVM1
                     '''
