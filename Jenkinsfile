@@ -61,7 +61,7 @@ Status           : SUCCESS
 Regards,
 Jenkins
 """,
-            to: "your-email@example.com"
+            to: "vinay.abc.reports@gmail.com"
         )
     }
 
@@ -75,7 +75,7 @@ Please check the Jenkins console logs.
 
 Build URL: ${env.BUILD_URL}
 """,
-            to: "your-email@example.com"
+            to: "vinay.abc.reports@gmail.com"
         )
     }
 
