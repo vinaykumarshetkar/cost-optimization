@@ -44,15 +44,40 @@ pipeline {
             }
         }
     }
+post {
+    success {
+        emailext(
+            subject: "Azure VM Started Successfully",
+            body: """
+Hello,
 
-    post {
-        success {
-            echo "Pipeline executed successfully."
-        }
+The Azure VM operation completed successfully.
 
-        failure {
-            echo "Pipeline failed. Check the console logs."
-        }
+VM Name          : testVM1
+Resource Group   : vinay
+Operation        : Start
+Status           : SUCCESS
+
+Regards,
+Jenkins
+""",
+            to: "your-email@example.com"
+        )
+    }
+
+    failure {
+        emailext(
+            subject: "Azure VM Operation Failed",
+            body: """
+The Azure VM operation failed.
+
+Please check the Jenkins console logs.
+
+Build URL: ${env.BUILD_URL}
+""",
+            to: "your-email@example.com"
+        )
+    }
 
         always {
             cleanWs()
